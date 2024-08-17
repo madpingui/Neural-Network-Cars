@@ -1,11 +1,13 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Creature : MonoBehaviour
 {
     public bool mutateMutations = true;
     public GameObject creaturePrefab;
     public bool isUser = false;
-    public float viewDistance = 20;
+    public float viewDistance = 30;
     public float energy = 20;
     public float energyGained = 10;
     public float reproductionEnergyGained = 1;
@@ -13,25 +15,25 @@ public class Creature : MonoBehaviour
     public float reproductionEnergyThreshold = 10;
     public int numberOfChildren = 1;
     public float mutationAmount = 0.8f;
-    public float mutationChance = 0.2f; 
+    public float mutationChance = 0.2f;
 
+    public static Action OnCreatureDead;
 
     private bool isMutated = false;
     private float elapsed = 0f;
     private float FB = 0;
     private float LR = 0;
-    private float[] distances = new float[6];
+    private float[] distances = new float[NumberOfRaycasts];
     private NN nn;
     private Movement movement;
-
-    public bool isDead = false;
+    private const int NumberOfRaycasts = 20;
 
     // Start is called before the first frame update
     void Awake()
     {
         nn = gameObject.GetComponent<NN>();
         movement = gameObject.GetComponent<Movement>();
-        distances = new float[6]; // Set up an array to store the distances to the food objects detected by the raycasts
+        distances = new float[NumberOfRaycasts]; // Set up an array to store the distances to the food objects detected by the raycasts
     }
 
     // Update is called once per frame
@@ -49,17 +51,14 @@ public class Creature : MonoBehaviour
         ManageEnergy();
 
         // This section of code is for the new food detection system (Raycasts)
-        // Set up a variable to store the number of raycasts to use
-        int numRaycasts = 5;
-
         // Set up a variable to store the angle between raycasts
-        float angleBetweenRaycasts = 30;
+        float angleBetweenRaycasts = 180f / (NumberOfRaycasts - 1);
 
         // Use multiple raycasts to detect food objects
         RaycastHit hit;
-        for (int i = 0; i < numRaycasts; i++)
+        for (int i = 0; i < NumberOfRaycasts; i++)
         {
-            float angle = (i - (numRaycasts - 1) / 2f) * angleBetweenRaycasts;
+            float angle = -90f + (i * angleBetweenRaycasts);
             // Rotate the direction of the raycast by the specified angle around the y-axis of the agent
             Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.up);
             Vector3 rayDirection = rotation * transform.forward * -1;
@@ -77,7 +76,7 @@ public class Creature : MonoBehaviour
                 else
                 {
                     // Draw a line representing the raycast in the scene view for debugging purposes
-                    Debug.DrawRay(rayStart, rayDirection * hit.distance, Color.green);
+                    Debug.DrawRay(rayStart, rayDirection * hit.distance, Color.blue);
                     // If no food object is detected, set the distance to the maximum length of the raycast
                     distances[i] = 1;
                 }
@@ -85,7 +84,7 @@ public class Creature : MonoBehaviour
             else
             {
                 // Draw a line representing the raycast in the scene view for debugging purposes
-                Debug.DrawRay(rayStart, rayDirection * viewDistance, Color.green);
+                Debug.DrawRay(rayStart, rayDirection * viewDistance, Color.blue);
                 // If no food object is detected, set the distance to the maximum length of the raycast
                 distances[i] = 1;
             }
@@ -147,12 +146,13 @@ public class Creature : MonoBehaviour
         if (energy <= 0 || agentY < -10)
         {
             this.transform.Rotate(0, 0, 180);
-            //this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y + 3.5f, this.transform.position.z);
-            Destroy(this.gameObject,3);
             GetComponent<Movement>().enabled = false;
+            Destroy(this.gameObject, 3);
         }
 
     }
+
+    private void OnDestroy() => OnCreatureDead?.Invoke();
 
     private void MutateCreature()
     {
@@ -175,11 +175,7 @@ public class Creature : MonoBehaviour
         for (int i = 0; i< numberOfChildren; i ++) // I left this here so I could possibly change the number of children a parent has at a time.
         {
             //create a new agent, and set its position to the parent's position + a random offset in the x and z directions (so they don't all spawn on top of each other)
-            GameObject child = Instantiate(creaturePrefab, new Vector3(
-                (float)this.transform.position.x + Random.Range(-10, 11), 
-                0.75f, 
-                (float)this.transform.position.z+ Random.Range(-10, 11)), 
-                Quaternion.identity);
+            var child = Instantiate(creaturePrefab, new Vector3(this.transform.position.x + Random.Range(-10, 11), 0.75f, this.transform.position.z+ Random.Range(-10, 11)), Quaternion.identity, this.transform.parent);
             
             //copy the parent's neural network to the child
             child.GetComponent<NN>().layers = GetComponent<NN>().copyLayers();

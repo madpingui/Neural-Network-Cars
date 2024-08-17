@@ -4,7 +4,7 @@ using UnityEngine;
 //It has some issues but it works for the most part
 public class SimSpeedController : MonoBehaviour
 {
-    float fpsAvg = 0;
+    private float fpsAvg = 0;
     private float timeSum;
     public bool autoAdjust;
     public float gameSpeed = 1;

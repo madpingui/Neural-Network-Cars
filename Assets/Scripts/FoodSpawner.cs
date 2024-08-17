@@ -2,9 +2,9 @@
 
 public class FoodSpawner : MonoBehaviour
 {
+    public GameObject foodPrefab;
     public float spawnRate = 1;
     public int floorScale = 1;
-    public GameObject foodPrefab;
 
     private float timeElapsed = 0;
 

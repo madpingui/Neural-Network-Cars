@@ -2,21 +2,14 @@
 
 public class Movement : MonoBehaviour
 {
-    public CharacterController controller;
-    private Vector3 playerVelocity;
-    private float gravityValue = -9.81f;
     public float speed = 10.0F;
     public float rotateSpeed = 10.0F;
-    public float FB = 0;
-    public float LR = 0;
 
-    private Creature creature;
+    private CharacterController controller;
+    private Vector3 playerVelocity;
+    private float gravityValue = -9.81f;
 
-    void Awake()
-    {
-        creature = GetComponent<Creature>();
-        controller = GetComponent<CharacterController>();
-    }
+    void Awake() => controller = GetComponent<CharacterController>();
 
     public void Move(float FB, float LR)
     {
@@ -24,17 +17,12 @@ public class Movement : MonoBehaviour
         LR = Mathf.Clamp(LR, -1, 1);
         FB = Mathf.Clamp(FB, 0, 1);
 
-        //move the agent
-        if (!creature.isDead)
-        {
-            // Rotate around y - axis
-            transform.Rotate(0, LR * rotateSpeed, 0);
+        // Rotate around y - axis
+        transform.Rotate(0, LR * rotateSpeed, 0);
 
-            // Move forward / backward
-            Vector3 forward = transform.TransformDirection(Vector3.forward);
-            controller.SimpleMove(forward * speed * FB * -1);
-        }
-
+        // Move forward / backward
+        Vector3 forward = transform.TransformDirection(Vector3.forward);
+        controller.SimpleMove(forward * speed * FB * -1);
 
         //Checks to see if the agent is grounded, if it is, don't apply gravity
         if (controller.isGrounded && playerVelocity.y < 0)

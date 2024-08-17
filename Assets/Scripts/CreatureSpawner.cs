@@ -3,23 +3,18 @@ using UnityEngine;
 public class CreatureSpawner : MonoBehaviour
 {
     public GameObject agentPrefab;
-    private GameObject[] agentList;
     public int floorScale = 1;
 
     private void Awake()
     {
-        
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        agentList = GameObject.FindGameObjectsWithTag("Agent");
-
-        // if there are no agents in the scene, spawn one at a random location. 
-        // This is to ensure that there is always at least one agent in the scene.
-        if (agentList.Length < 1)
-            SpawnCreature();
+        Creature.OnCreatureDead += () => 
+        {
+            // if there are no agents in the scene, spawn one at a random location. 
+            // This is to ensure that there is always at least one agent in the scene.
+            if (this.transform.childCount == 1)
+                SpawnCreature();
+        };
+        SpawnCreature();
     }
 
     void SpawnCreature()

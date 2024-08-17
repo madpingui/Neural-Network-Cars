@@ -122,32 +122,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mutateMutations: 1
-  agentPrefab: {fileID: 5010332839671705980}
+  creaturePrefab: {fileID: 5010332839671705980}
   isUser: 0
-  canEat: 1
-  viewDistance: 20
-  size: 1
+  viewDistance: 30
   energy: 20
   energyGained: 10
   reproductionEnergyGained: 1
   reproductionEnergy: 0
   reproductionEnergyThreshold: 10
-  FB: 0
-  LR: 0
   numberOfChildren: 1
-  lifeSpan: 0
-  distances:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
   mutationAmount: 0.8
   mutationChance: 0.2
-  nn: {fileID: 0}
-  movement: {fileID: 0}
-  isDead: 0
 --- !u!114 &1593529010270784092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,11 +145,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f1af9401cc160848804c0d2efd643b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
   speed: 10
   rotateSpeed: 10
-  FB: 0
-  LR: 0
 --- !u!114 &7771161792058303902
 MonoBehaviour:
   m_ObjectHideFlags: 0
