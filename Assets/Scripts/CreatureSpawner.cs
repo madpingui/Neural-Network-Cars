@@ -1,26 +1,64 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using static NN;
 
 public class CreatureSpawner : MonoBehaviour
 {
     public GameObject agentPrefab;
-    public int floorScale = 1;
+
+    public int numberOfCreatures = 5;
+    private Layer[] BestLayers = null;
+    private int BestCheckpointReach = 0;
+    private List<Creature> activeCreatures = new List<Creature>(); // List to keep track of active creatures
 
     private void Awake()
     {
-        Creature.OnCreatureDead += () => 
-        {
-            // if there are no agents in the scene, spawn one at a random location. 
-            // This is to ensure that there is always at least one agent in the scene.
-            if (this.transform.childCount == 1)
-                SpawnCreature();
-        };
-        SpawnCreature();
+        Creature.OnCreatureDead += OnCreatureDead;
+        SpawnCreatures();
     }
 
-    void SpawnCreature()
+    private void OnDestroy()
     {
-        int x = Random.Range(-100, 101) * floorScale;
-        int z = Random.Range(-100, 101) * floorScale;
-        Instantiate(agentPrefab, new Vector3(x, 0.75f, z), Quaternion.identity, this.transform);
+        Creature.OnCreatureDead -= OnCreatureDead;
+    }
+
+    void OnCreatureDead(Creature creature)
+    {
+        // Remove the dead creature from the list
+        activeCreatures.Remove(creature);
+
+        // If no left take the last one and copy its genes.
+        if (activeCreatures.Count == 0)
+            TakeBestCreatureAndReproduce(creature);
+    }
+
+    void TakeBestCreatureAndReproduce(Creature creature)
+    {
+        if(creature.amountOfCorrectCheckpoints > BestCheckpointReach)
+        {
+            BestLayers = creature.GetComponent<NN>().copyLayers();
+            BestCheckpointReach = creature.amountOfCorrectCheckpoints;
+        }
+        SpawnCreatures();
+    }
+
+    void SpawnCreatures()
+    {
+        // Clear the active creatures list
+        activeCreatures.Clear();
+
+        // Spawn new creatures
+        for (int i = 0; i < numberOfCreatures; i++)
+        {
+            var child = Instantiate(agentPrefab, this.transform.position, this.transform.rotation, this.transform);
+            var childCreature = child.GetComponent<Creature>();
+
+            if (BestLayers != null)
+                child.GetComponent<NN>().layers = BestLayers;
+
+            // Add the new creature to the list of active creatures
+            activeCreatures.Add(childCreature);
+        }
     }
 }

@@ -9,15 +9,13 @@ public class Creature : MonoBehaviour
     public bool isUser = false;
     public float viewDistance = 30;
     public float energy = 20;
-    public float energyGained = 10;
-    public float reproductionEnergyGained = 1;
-    public float reproductionEnergy = 0;
-    public float reproductionEnergyThreshold = 10;
-    public int numberOfChildren = 1;
+    public float energyGained;
     public float mutationAmount = 0.8f;
     public float mutationChance = 0.2f;
 
-    public static Action OnCreatureDead;
+    public static Action<Creature> OnCreatureDead;
+
+    public float rayCastTotalAngle = 180f;
 
     private bool isMutated = false;
     private float elapsed = 0f;
@@ -26,11 +24,12 @@ public class Creature : MonoBehaviour
     private float[] distances = new float[NumberOfRaycasts];
     private NN nn;
     private Movement movement;
-    private const int NumberOfRaycasts = 20;
+    private const int NumberOfRaycasts = 5;
 
     // Start is called before the first frame update
     void Awake()
     {
+        energy = 5;
         nn = gameObject.GetComponent<NN>();
         movement = gameObject.GetComponent<Movement>();
         distances = new float[NumberOfRaycasts]; // Set up an array to store the distances to the food objects detected by the raycasts
@@ -45,33 +44,32 @@ public class Creature : MonoBehaviour
             //call mutate function to mutate the neural network
             MutateCreature();
             isMutated = true;
-            energy = 20;
         }
 
         ManageEnergy();
 
         // This section of code is for the new food detection system (Raycasts)
         // Set up a variable to store the angle between raycasts
-        float angleBetweenRaycasts = 180f / (NumberOfRaycasts - 1);
+        float angleBetweenRaycasts = rayCastTotalAngle / (NumberOfRaycasts - 1);
 
         // Use multiple raycasts to detect food objects
         RaycastHit hit;
         for (int i = 0; i < NumberOfRaycasts; i++)
         {
-            float angle = -90f + (i * angleBetweenRaycasts);
+            float angle = -(rayCastTotalAngle / 2) + (i * angleBetweenRaycasts);
             // Rotate the direction of the raycast by the specified angle around the y-axis of the agent
             Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.up);
-            Vector3 rayDirection = rotation * transform.forward * -1;
+            Vector3 rayDirection = rotation * transform.forward;
             // Increase the starting point of the raycast by 0.1 units
             Vector3 rayStart = transform.position + Vector3.up * 0.1f;
             if (Physics.Raycast(rayStart, rayDirection, out hit, viewDistance))
             {
-                if (hit.transform.gameObject.CompareTag("Food"))
+                if (hit.transform.gameObject.CompareTag("Enemy"))
                 {
                     // Draw a line representing the raycast in the scene view for debugging purposes
                     Debug.DrawRay(rayStart, rayDirection * hit.distance, Color.red);
                     // Use the length of the raycast as the distance to the food object
-                    distances[i] = hit.distance/viewDistance;
+                    distances[i] = hit.distance / viewDistance;
                 }
                 else
                 {
@@ -111,15 +109,11 @@ public class Creature : MonoBehaviour
         movement.Move(FB, LR);
     }
 
-    //this function gets called whenever the agent collides with a trigger. (Which in this case is the food)
-    void OnTriggerEnter(Collider col)
+    private void OnCollisionEnter(Collision collision)
     {
-        //if the agent collides with a food object, it will eat it and gain energy.
-        if (col.gameObject.CompareTag("Food"))
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            energy += energyGained;
-            reproductionEnergy += reproductionEnergyGained;
-            Destroy(col.gameObject);
+            energy -= 1;
         }
     }
 
@@ -132,27 +126,16 @@ public class Creature : MonoBehaviour
 
             //subtract 1 energy per second
             energy -= 1f;
-
-            //if agent has enough energy to reproduce, reproduce
-            if (reproductionEnergy >= reproductionEnergyThreshold)
-            {
-                reproductionEnergy = 0;
-                Reproduce();
-            }
         }
 
         //Starve
         float agentY = this.transform.position.y;
         if (energy <= 0 || agentY < -10)
         {
-            this.transform.Rotate(0, 0, 180);
-            GetComponent<Movement>().enabled = false;
-            Destroy(this.gameObject, 3);
+            OnCreatureDead?.Invoke(this);
+            Destroy(this.gameObject);
         }
-
     }
-
-    private void OnDestroy() => OnCreatureDead?.Invoke();
 
     private void MutateCreature()
     {
@@ -166,21 +149,27 @@ public class Creature : MonoBehaviour
         mutationAmount = Mathf.Max(mutationAmount, 0);
         mutationChance = Mathf.Max(mutationChance, 0);
 
-        nn.MutateNetwork(mutationAmount, mutationChance);
+        nn.MutateNetwork(mutationChance, mutationAmount);
     }
 
-    public void Reproduce()
-    {
-        //replicate
-        for (int i = 0; i< numberOfChildren; i ++) // I left this here so I could possibly change the number of children a parent has at a time.
-        {
-            //create a new agent, and set its position to the parent's position + a random offset in the x and z directions (so they don't all spawn on top of each other)
-            var child = Instantiate(creaturePrefab, new Vector3(this.transform.position.x + Random.Range(-10, 11), 0.75f, this.transform.position.z+ Random.Range(-10, 11)), Quaternion.identity, this.transform.parent);
-            
-            //copy the parent's neural network to the child
-            child.GetComponent<NN>().layers = GetComponent<NN>().copyLayers();
-        }
-        reproductionEnergy = 0;
+    private int currentCheckpointIndex = 0;
+    [HideInInspector] public int amountOfCorrectCheckpoints = 0;
 
+    public void ValidateCheckpoint(int checkpointIndex, bool isLastChekpoint)
+    {
+        if (checkpointIndex == currentCheckpointIndex)
+        {
+            // Update to the next checkpoint
+            currentCheckpointIndex++;
+            amountOfCorrectCheckpoints++;
+
+            if (isLastChekpoint)
+                currentCheckpointIndex = 0;
+            energy += energyGained;
+        }
+        else
+        {
+            energy -= energyGained;
+        }
     }
 }

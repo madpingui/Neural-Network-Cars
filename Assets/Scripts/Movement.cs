@@ -9,7 +9,7 @@ public class Movement : MonoBehaviour
     private Vector3 playerVelocity;
     private float gravityValue = -9.81f;
 
-    void Awake() => controller = GetComponent<CharacterController>();
+    void OnEnable() => controller = GetComponent<CharacterController>();
 
     public void Move(float FB, float LR)
     {
@@ -22,7 +22,7 @@ public class Movement : MonoBehaviour
 
         // Move forward / backward
         Vector3 forward = transform.TransformDirection(Vector3.forward);
-        controller.SimpleMove(forward * speed * FB * -1);
+        controller.SimpleMove(forward * speed * FB);
 
         //Checks to see if the agent is grounded, if it is, don't apply gravity
         if (controller.isGrounded && playerVelocity.y < 0)
