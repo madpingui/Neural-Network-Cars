@@ -262,6 +262,31 @@ public class PrometeoCarController : MonoBehaviour
 
     }
 
+    public void Move(float FB, float LR)
+    {
+        //clamp the values of LR and FB
+        LR = Mathf.Clamp(LR, -1, 1);
+        FB = Mathf.Clamp(FB, 0, 1);
+
+        if (FB > 0)
+        {
+            GoForward(FB);
+        }
+        else if (FB < 0)
+        {
+            GoReverse(FB);
+        }
+
+        if (LR > 0)
+        {
+            TurnRight(LR);
+        }
+        else if (LR < 0)
+        {
+            TurnLeft(LR);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -287,83 +312,83 @@ public class PrometeoCarController : MonoBehaviour
       In this part of the code we specify what the car needs to do if the user presses W (throttle), S (reverse),
       A (turn left), D (turn right) or Space bar (handbrake).
       */
-      if (useTouchControls && touchControlsSetup){
+      //if (useTouchControls && touchControlsSetup){
 
-        if(throttlePTI.buttonPressed){
-          CancelInvoke("DecelerateCar");
-          deceleratingCar = false;
-          GoForward();
-        }
-        if(reversePTI.buttonPressed){
-          CancelInvoke("DecelerateCar");
-          deceleratingCar = false;
-          GoReverse();
-        }
+      //  if(throttlePTI.buttonPressed){
+      //    CancelInvoke("DecelerateCar");
+      //    deceleratingCar = false;
+      //    GoForward();
+      //  }
+      //  if(reversePTI.buttonPressed){
+      //    CancelInvoke("DecelerateCar");
+      //    deceleratingCar = false;
+      //    GoReverse();
+      //  }
 
-        if(turnLeftPTI.buttonPressed){
-          TurnLeft();
-        }
-        if(turnRightPTI.buttonPressed){
-          TurnRight();
-        }
-        if(handbrakePTI.buttonPressed){
-          CancelInvoke("DecelerateCar");
-          deceleratingCar = false;
-          Handbrake();
-        }
-        if(!handbrakePTI.buttonPressed){
-          RecoverTraction();
-        }
-        if((!throttlePTI.buttonPressed && !reversePTI.buttonPressed)){
-          ThrottleOff();
-        }
-        if((!reversePTI.buttonPressed && !throttlePTI.buttonPressed) && !handbrakePTI.buttonPressed && !deceleratingCar){
-          InvokeRepeating("DecelerateCar", 0f, 0.1f);
-          deceleratingCar = true;
-        }
-        if(!turnLeftPTI.buttonPressed && !turnRightPTI.buttonPressed && steeringAxis != 0f){
-          ResetSteeringAngle();
-        }
+      //  if(turnLeftPTI.buttonPressed){
+      //    TurnLeft();
+      //  }
+      //  if(turnRightPTI.buttonPressed){
+      //    TurnRight();
+      //  }
+      //  if(handbrakePTI.buttonPressed){
+      //    CancelInvoke("DecelerateCar");
+      //    deceleratingCar = false;
+      //    Handbrake();
+      //  }
+      //  if(!handbrakePTI.buttonPressed){
+      //    RecoverTraction();
+      //  }
+      //  if((!throttlePTI.buttonPressed && !reversePTI.buttonPressed)){
+      //    ThrottleOff();
+      //  }
+      //  if((!reversePTI.buttonPressed && !throttlePTI.buttonPressed) && !handbrakePTI.buttonPressed && !deceleratingCar){
+      //    InvokeRepeating("DecelerateCar", 0f, 0.1f);
+      //    deceleratingCar = true;
+      //  }
+      //  if(!turnLeftPTI.buttonPressed && !turnRightPTI.buttonPressed && steeringAxis != 0f){
+      //    ResetSteeringAngle();
+      //  }
 
-      }else{
+      //}else{
 
-        if(Input.GetKey(KeyCode.W)){
-          CancelInvoke("DecelerateCar");
-          deceleratingCar = false;
-          GoForward();
-        }
-        if(Input.GetKey(KeyCode.S)){
-          CancelInvoke("DecelerateCar");
-          deceleratingCar = false;
-          GoReverse();
-        }
+      //  if(Input.GetKey(KeyCode.W)){
+      //    CancelInvoke("DecelerateCar");
+      //    deceleratingCar = false;
+      //    GoForward();
+      //  }
+      //  if(Input.GetKey(KeyCode.S)){
+      //    CancelInvoke("DecelerateCar");
+      //    deceleratingCar = false;
+      //    GoReverse();
+      //  }
 
-        if(Input.GetKey(KeyCode.A)){
-          TurnLeft();
-        }
-        if(Input.GetKey(KeyCode.D)){
-          TurnRight();
-        }
-        if(Input.GetKey(KeyCode.Space)){
-          CancelInvoke("DecelerateCar");
-          deceleratingCar = false;
-          Handbrake();
-        }
-        if(Input.GetKeyUp(KeyCode.Space)){
-          RecoverTraction();
-        }
-        if((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W))){
-          ThrottleOff();
-        }
-        if((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && !Input.GetKey(KeyCode.Space) && !deceleratingCar){
-          InvokeRepeating("DecelerateCar", 0f, 0.1f);
-          deceleratingCar = true;
-        }
-        if(!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && steeringAxis != 0f){
-          ResetSteeringAngle();
-        }
+      //  if(Input.GetKey(KeyCode.A)){
+      //    TurnLeft();
+      //  }
+      //  if(Input.GetKey(KeyCode.D)){
+      //    TurnRight();
+      //  }
+      //  if(Input.GetKey(KeyCode.Space)){
+      //    CancelInvoke("DecelerateCar");
+      //    deceleratingCar = false;
+      //    Handbrake();
+      //  }
+      //  if(Input.GetKeyUp(KeyCode.Space)){
+      //    RecoverTraction();
+      //  }
+      //  if((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W))){
+      //    ThrottleOff();
+      //  }
+      //  if((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && !Input.GetKey(KeyCode.Space) && !deceleratingCar){
+      //    InvokeRepeating("DecelerateCar", 0f, 0.1f);
+      //    deceleratingCar = true;
+      //  }
+      //  if(!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && steeringAxis != 0f){
+      //    ResetSteeringAngle();
+      //  }
 
-      }
+      //}
 
 
       // We call the method AnimateWheelMeshes() in order to match the wheel collider movements with the 3D meshes of the wheels.
@@ -423,23 +448,28 @@ public class PrometeoCarController : MonoBehaviour
     //
 
     //The following method turns the front car wheels to the left. The speed of this movement will depend on the steeringSpeed variable.
-    public void TurnLeft(){
-      steeringAxis = steeringAxis - (Time.deltaTime * 10f * steeringSpeed);
-      if(steeringAxis < -1f){
-        steeringAxis = -1f;
-      }
+    public void TurnLeft(float L){
+        //steeringAxis = steeringAxis - (Time.deltaTime * 10f * steeringSpeed);
+        //if(steeringAxis < -1f){
+        //  steeringAxis = -1f;
+        //}
+
+        steeringAxis = L;
       var steeringAngle = steeringAxis * maxSteeringAngle;
       frontLeftCollider.steerAngle = Mathf.Lerp(frontLeftCollider.steerAngle, steeringAngle, steeringSpeed);
       frontRightCollider.steerAngle = Mathf.Lerp(frontRightCollider.steerAngle, steeringAngle, steeringSpeed);
     }
 
     //The following method turns the front car wheels to the right. The speed of this movement will depend on the steeringSpeed variable.
-    public void TurnRight(){
-      steeringAxis = steeringAxis + (Time.deltaTime * 10f * steeringSpeed);
-      if(steeringAxis > 1f){
-        steeringAxis = 1f;
-      }
-      var steeringAngle = steeringAxis * maxSteeringAngle;
+    public void TurnRight(float R)
+    {
+      //steeringAxis = steeringAxis + (Time.deltaTime * 10f * steeringSpeed);
+      //if(steeringAxis > 1f){
+      //  steeringAxis = 1f;
+      //}
+
+        steeringAxis = R;
+        var steeringAngle = steeringAxis * maxSteeringAngle;
       frontLeftCollider.steerAngle = Mathf.Lerp(frontLeftCollider.steerAngle, steeringAngle, steeringSpeed);
       frontRightCollider.steerAngle = Mathf.Lerp(frontRightCollider.steerAngle, steeringAngle, steeringSpeed);
     }
@@ -496,7 +526,8 @@ public class PrometeoCarController : MonoBehaviour
     //
 
     // This method apply positive torque to the wheels in order to go forward.
-    public void GoForward(){
+    public void GoForward(float F)
+    {
       //If the forces aplied to the rigidbody in the 'x' asis are greater than
       //3f, it means that the car is losing traction, then the car will start emitting particle systems.
       if(Mathf.Abs(localVelocityX) > 2.5f){
@@ -507,10 +538,10 @@ public class PrometeoCarController : MonoBehaviour
         DriftCarPS();
       }
       // The following part sets the throttle power to 1 smoothly.
-      throttleAxis = throttleAxis + (Time.deltaTime * 3f);
-      if(throttleAxis > 1f){
-        throttleAxis = 1f;
-      }
+      //throttleAxis = throttleAxis + (Time.deltaTime * 3f);
+      //if(throttleAxis > 1f){
+      //}
+        throttleAxis = F;
       //If the car is going backwards, then apply brakes in order to avoid strange
       //behaviours. If the local velocity in the 'z' axis is less than -1f, then it
       //is safe to apply positive torque to go forward.
@@ -540,7 +571,8 @@ public class PrometeoCarController : MonoBehaviour
     }
 
     // This method apply negative torque to the wheels in order to go backwards.
-    public void GoReverse(){
+    public void GoReverse(float R)
+    {
       //If the forces aplied to the rigidbody in the 'x' asis are greater than
       //3f, it means that the car is losing traction, then the car will start emitting particle systems.
       if(Mathf.Abs(localVelocityX) > 2.5f){
@@ -551,10 +583,10 @@ public class PrometeoCarController : MonoBehaviour
         DriftCarPS();
       }
       // The following part sets the throttle power to -1 smoothly.
-      throttleAxis = throttleAxis - (Time.deltaTime * 3f);
-      if(throttleAxis < -1f){
-        throttleAxis = -1f;
-      }
+      //throttleAxis = throttleAxis - (Time.deltaTime * 3f);
+      //if(throttleAxis < -1f){
+      //}
+        throttleAxis = R;
       //If the car is still going forward, then apply brakes in order to avoid strange
       //behaviours. If the local velocity in the 'z' axis is greater than 1f, then it
       //is safe to apply negative torque to go reverse.

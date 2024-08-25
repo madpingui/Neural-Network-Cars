@@ -57,6 +57,13 @@ public class CreatureSpawner : MonoBehaviour
             if (BestLayers != null)
                 child.GetComponent<NN>().layers = BestLayers;
 
+            // Apply elitism: keep the best creature unmutated in the next generation
+            if (i == 0 && BestLayers != null)
+            {
+                childCreature.mutationAmount = 0f;
+                childCreature.mutationChance = 0f;
+            }
+
             // Add the new creature to the list of active creatures
             activeCreatures.Add(childCreature);
         }

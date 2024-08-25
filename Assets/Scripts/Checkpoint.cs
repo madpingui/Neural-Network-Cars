@@ -14,7 +14,7 @@ public class Checkpoint : MonoBehaviour
     {
         if (other.CompareTag("Agent"))
         {
-            other.GetComponent<Creature>().ValidateCheckpoint(checkpointIndex, checkpointIndex == this.transform.parent.parent.childCount - 1);
+            other.GetComponentInParent<Creature>().ValidateCheckpoint(checkpointIndex, checkpointIndex == this.transform.parent.parent.childCount - 1);
         }
     }
 }

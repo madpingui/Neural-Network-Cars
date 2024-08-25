@@ -5,13 +5,12 @@ using Random = UnityEngine.Random;
 public class Creature : MonoBehaviour
 {
     public bool mutateMutations = true;
-    public GameObject creaturePrefab;
     public bool isUser = false;
     public float viewDistance = 30;
-    public float energy = 20;
-    public float energyGained;
-    public float mutationAmount = 0.8f;
-    public float mutationChance = 0.2f;
+    private float energy;
+    private float energyGained;
+    [HideInInspector] public float mutationAmount = 0.01f;
+    [HideInInspector] public float mutationChance = 0.2f;
 
     public static Action<Creature> OnCreatureDead;
 
@@ -23,15 +22,16 @@ public class Creature : MonoBehaviour
     private float LR = 0;
     private float[] distances = new float[NumberOfRaycasts];
     private NN nn;
-    private Movement movement;
+    private PrometeoCarController movement;
     private const int NumberOfRaycasts = 5;
 
     // Start is called before the first frame update
     void Awake()
     {
-        energy = 5;
+        energy = 10;
+        energyGained = 3;
         nn = gameObject.GetComponent<NN>();
-        movement = gameObject.GetComponent<Movement>();
+        movement = gameObject.GetComponent<PrometeoCarController>();
         distances = new float[NumberOfRaycasts]; // Set up an array to store the distances to the food objects detected by the raycasts
     }
 
@@ -61,7 +61,7 @@ public class Creature : MonoBehaviour
             Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.up);
             Vector3 rayDirection = rotation * transform.forward;
             // Increase the starting point of the raycast by 0.1 units
-            Vector3 rayStart = transform.position + Vector3.up * 0.1f;
+            Vector3 rayStart = (transform.position + Vector3.up * 0.3f) + (transform.forward * 3f);
             if (Physics.Raycast(rayStart, rayDirection, out hit, viewDistance))
             {
                 if (hit.transform.gameObject.CompareTag("Enemy"))
@@ -109,13 +109,13 @@ public class Creature : MonoBehaviour
         movement.Move(FB, LR);
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Enemy"))
-        {
-            energy -= 1;
-        }
-    }
+    //private void OnCollisionEnter(Collision collision)
+    //{
+    //    if (collision.gameObject.CompareTag("Enemy"))
+    //    {
+    //        energy -= 1;
+    //    }
+    //}
 
     public void ManageEnergy()
     {
@@ -139,15 +139,15 @@ public class Creature : MonoBehaviour
 
     private void MutateCreature()
     {
-        if(mutateMutations)
+        if (mutateMutations)
         {
-            mutationAmount += Random.Range(-1.0f, 1.0f)/100;
-            mutationChance += Random.Range(-1.0f, 1.0f)/100;
+            mutationAmount += Random.Range(-0.01f, 0.01f);
+            mutationChance += Random.Range(-0.01f, 0.01f);
         }
 
-        //make sure mutation amount and chance are positive using max function
-        mutationAmount = Mathf.Max(mutationAmount, 0);
-        mutationChance = Mathf.Max(mutationChance, 0);
+        // Limit mutation amount and chance within a reasonable range
+        mutationAmount = Mathf.Clamp(mutationAmount, 0f, 0.1f);
+        mutationChance = Mathf.Clamp(mutationChance, 0f, 0.1f);
 
         nn.MutateNetwork(mutationChance, mutationAmount);
     }
@@ -162,14 +162,14 @@ public class Creature : MonoBehaviour
             // Update to the next checkpoint
             currentCheckpointIndex++;
             amountOfCorrectCheckpoints++;
+            energy += energyGained * 1.5f;  // Reward energy for correct checkpoint
 
             if (isLastChekpoint)
                 currentCheckpointIndex = 0;
-            energy += energyGained;
         }
         else
         {
-            energy -= energyGained;
+            energy -= energyGained * 0.5f;  // Smaller penalty for incorrect checkpoint
         }
     }
 }

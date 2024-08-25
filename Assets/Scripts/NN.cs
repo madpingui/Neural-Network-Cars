@@ -102,24 +102,37 @@ public class NN : MonoBehaviour
             }
         }
 
-        //This is used to randomly modify the weights and biases for the Evolution Sim and Genetic Algorithm.
+        float biasLimit = 1.0f; // Limits biases to the range [-1.0, 1.0]
+        float weightLimit = 1.0f; // Limits weights to the range [-1.0, 1.0]
+
         public void MutateLayer(float mutationChance, float mutationAmount)
         {
-            for(int i = 0; i < n_neurons; i++)
+            for (int i = 0; i < n_neurons; i++)
             {
-                for(int j = 0; j < n_inputs; j++)
+                for (int j = 0; j < n_inputs; j++)
                 {
-                    if(Random.value < mutationChance)
+                    if (Random.value < mutationChance)
                     {
-                        weightsArray[i,j] += Random.Range(-1.0f, 1.0f)*mutationAmount;
+                        float mutation = GaussianRandom(0, mutationAmount);
+                        weightsArray[i, j] = Mathf.Clamp(weightsArray[i, j] + mutation, -weightLimit, weightLimit);
                     }
                 }
 
-                if(Random.value < mutationChance)
+                if (Random.value < mutationChance)
                 {
-                    biasesArray[i] += Random.Range(-1.0f, 1.0f)*mutationAmount;
+                    float mutation = GaussianRandom(0, mutationAmount);
+                    biasesArray[i] = Mathf.Clamp(biasesArray[i] + mutation, -biasLimit, biasLimit);
                 }
             }
+        }
+
+        // Gaussian distribution with mean = 0 and adjustable standard deviation
+        private float GaussianRandom(float mean, float stddev)
+        {
+            float u1 = Random.value;
+            float u2 = Random.value;
+            float randStdNormal = Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.PI * u2);
+            return mean + stddev * randStdNormal;
         }
     }
 
