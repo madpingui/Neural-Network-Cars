@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 1147925620614081796}
   m_Layer: 6
   m_Name: Prometheus
-  m_TagString: Untagged
+  m_TagString: Agent
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -169,15 +169,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 642287924342879162}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 200a66e06e5bdca4085293c08a2e8e4e, type: 3}
+  m_Script: {fileID: 11500000, guid: 82cd08f070258b9448dab83af3cc9fc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mutateMutations: 0
-  isUser: 0
+  mutateMutations: 1
   viewDistance: 7
-  mutationAmount: 50
-  mutationChance: 1
   rayCastTotalAngle: 130
+  mutationAmount: 0.01
+  mutationChance: 0.2
   amountOfCorrectCheckpoints: 0
 --- !u!1 &934883528070179459
 GameObject:

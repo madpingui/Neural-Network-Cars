@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class Checkpoint : MonoBehaviour
 {
-    public int checkpointIndex;  // Set this in the inspector or via script
-
+    private int checkpointIndex;
     private void Start()
     {
         // Calculate the index based on the position in the hierarchy
@@ -14,7 +13,7 @@ public class Checkpoint : MonoBehaviour
     {
         if (other.CompareTag("Agent"))
         {
-            other.GetComponentInParent<Creature>().ValidateCheckpoint(checkpointIndex, checkpointIndex == this.transform.parent.parent.childCount - 1);
+            other.GetComponentInParent<CarAgent>().ValidateCheckpoint(checkpointIndex, checkpointIndex == this.transform.parent.parent.childCount - 1);
         }
     }
 }

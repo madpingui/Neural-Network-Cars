@@ -4,9 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Food
   - Agent
-  - Enemy
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -14,7 +13,7 @@ TagManager:
   - 
   - Water
   - UI
-  - Creature
+  - Car
   - 
   - 
   - 
