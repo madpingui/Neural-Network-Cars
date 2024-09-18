@@ -111,13 +111,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0fefceefe666bb4682b272ec8c5bdd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 20
+  maxSpeed: 60
   maxReverseSpeed: 45
-  accelerationMultiplier: 6
-  maxSteeringAngle: 45
-  steeringSpeed: 1
+  accelerationMultiplier: 4
+  maxSteeringAngle: 35
+  steeringSpeed: 0.351
   brakeForce: 452
-  decelerationMultiplier: 5
+  decelerationMultiplier: 10
   handbrakeDriftMultiplier: 1
   bodyMassCenter: {x: 0, y: 0, z: 0}
   frontLeftMesh: {fileID: 8649133034589738184}
@@ -159,11 +159,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82cd08f070258b9448dab83af3cc9fc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewDistance: 7
-  rayCastTotalAngle: 130
-  mutationAmount: 0.01
+  viewDistance: 12
+  raycastTotalAngle: 180
+  numberOfRaycasts: 5
+  lineMaterial: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  mutationAmount: 0.1
   mutationChance: 0.2
-  amountOfCorrectCheckpoints: 0
+  initialFuel: 5
+  fuelGainedPerCheckpoint: 2
+  fuelConsumptionRate: 1
+  idleSpeedThreshold: 0.01
+  idleTimeLimit: 1
 --- !u!1 &934883528070179459
 GameObject:
   m_ObjectHideFlags: 0

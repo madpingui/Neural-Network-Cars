@@ -3,82 +3,77 @@ using UnityEngine;
 
 public class CarSpawner : MonoBehaviour
 {
-    public GameObject carPrefab;
-    public int numberOfSpawns = 5;
+    [SerializeField] private GameObject carPrefab;
+    [SerializeField] private int numberOfSpawns = 5;
 
-    private Layer[] BestLayers = null;
-    private int BestCheckpointReach = 0;
+    private NeuralNetwork bestNetwork;
+    private int bestCheckpointReach = 0;
     private List<CarAgent> activeCars = new List<CarAgent>();
 
     private void Awake()
     {
-        CarAgent.OnCarBroken += OnCreatureDead;
-        Spawn();
+        CarAgent.OnCarDestroyed += OnCarDestroyed;
+        SpawnCars();
     }
 
     private void OnDestroy()
     {
-        CarAgent.OnCarBroken -= OnCreatureDead;
+        CarAgent.OnCarDestroyed -= OnCarDestroyed;
     }
 
-    void OnCreatureDead(CarAgent car)
+    // When a car is destroyed, remove it from the list and trigger evaluation/reproduction if all cars are destroyed
+    private void OnCarDestroyed(CarAgent car)
     {
-        // Remove the dead creature from the list
         activeCars.Remove(car);
 
-        // If no left take the last one and copy its genes.
         if (activeCars.Count == 0)
-            TakeBestAndReproduce(car);
-
-        Destroy(car.gameObject);
-    }
-
-    void TakeBestAndReproduce(CarAgent car)
-    {
-        if(car.amountOfCorrectCheckpoints > BestCheckpointReach)
         {
-            BestLayers = car.nn.copyLayers(car.nn.layers);
-            BestCheckpointReach = car.amountOfCorrectCheckpoints;
+            EvaluateAndReproduce(car); // Reproduce new cars after evaluating the best car's performance
         }
-        Spawn();
     }
 
-    void Spawn()
+    // Evaluate the best performing network and use it for reproduction
+    private void EvaluateAndReproduce(CarAgent car)
     {
-        // Clear any remaining cars (should be empty at this point)
+        // If the car passed more checkpoints than the current best, update the best network
+        if (car.CorrectCheckpointsPassed > bestCheckpointReach)
+        {
+            bestNetwork = car.GetNeuralNetworkCopy();
+            bestCheckpointReach = car.CorrectCheckpointsPassed;
+        }
+        SpawnCars(); // Respawn cars after evaluating
+    }
+
+    // Spawns new cars and assigns neural networks, mutating them except for the best performing car
+    private void SpawnCars()
+    {
         foreach (var car in activeCars)
         {
             if (car != null)
             {
-                Destroy(car.gameObject);
+                Destroy(car.gameObject); // Cleanup old car objects
             }
         }
-        activeCars.Clear();
+        activeCars.Clear(); // Clear the car list before spawning new ones
 
-        // Spawn new cars
         for (int i = 0; i < numberOfSpawns; i++)
         {
-            var car = Instantiate(carPrefab, this.transform.position, this.transform.rotation, this.transform);
-            var carAgent = car.GetComponent<CarAgent>();
+            GameObject carObject = Instantiate(carPrefab, transform.position, transform.rotation, transform);
+            CarAgent carAgent = carObject.GetComponent<CarAgent>();
 
-            if (BestLayers != null)
-                carAgent.nn.layers = carAgent.nn.copyLayers(BestLayers);
-
-            // Apply elitism: keep the best creature unmutated in the next generation
-            if (i == 0 && BestLayers != null)
+            if (bestNetwork != null)
             {
-                carAgent.mutationAmount = 0f;
-                carAgent.mutationChance = 0f;
-            }
-            else
-            {
-                carAgent.mutationAmount = 0.1f;
-                carAgent.mutationChance = 0.2f;
-                carAgent.Mutate();
+                carAgent.InitializeNeuralNetwork(bestNetwork); // Assign the best-performing network
             }
 
-            // Add the new creature to the list of active creatures
-            activeCars.Add(carAgent);
+            // Mutate all cars except for the first one if there’s no best network
+            if (i != 0 || bestNetwork == null)
+            {
+                carAgent.Mutate(); // Mutate the newly spawned cars
+            }
+
+            activeCars.Add(carAgent); // Add car to the active car list
         }
     }
 }
+
