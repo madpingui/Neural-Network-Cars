@@ -1,46 +1,56 @@
 using System;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class CarAgent : MonoBehaviour
 {
-    public bool mutateMutations = true;
     public float viewDistance = 10;
     public float rayCastTotalAngle = 180f;
-    [HideInInspector] public float mutationAmount = 0.01f;
+    [HideInInspector] public float mutationAmount = 0.1f;
     [HideInInspector] public float mutationChance = 0.2f;
 
     public static Action<CarAgent> OnCarBroken;
 
     private float fuel;
     private float fuelGained;
-    private bool isMutated = false;
     private float elapsed = 0f;
     private float FB = 0;
     private float LR = 0;
     private float[] distances = new float[NumberOfRaycasts];
-    private NN nn;
     private PrometeoCarController CarController;
     private const int NumberOfRaycasts = 5;
+    private bool isDead = false;
 
+    public NN nn;
+    
     void Awake()
     {
         fuel = 10;
         fuelGained = 3;
-        nn = gameObject.GetComponent<NN>();
+        nn = new NN();
         CarController = gameObject.GetComponent<PrometeoCarController>();
         distances = new float[NumberOfRaycasts]; // Set up an array to store the distances to the walls detected by the raycasts
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            DestroyAgent();
+        }
+    }
+
+    private void DestroyAgent()
+    {
+        if (isDead) return; // Prevent multiple calls
+
+        isDead = true;
+        OnCarBroken?.Invoke(this);
+        Destroy(gameObject);
+    }
+
     void FixedUpdate()
     {
-        //only do this once
-        if(!isMutated)
-        {
-            //call mutate function to mutate the neural network
-            Mutate();
-            isMutated = true;
-        }
+        if (isDead) return;
 
         ManageFuel();
 
@@ -111,24 +121,16 @@ public class CarAgent : MonoBehaviour
         float agentY = this.transform.position.y;
         if (fuel <= 0 || agentY < -10)
         {
-            OnCarBroken?.Invoke(this);
-            Destroy(this.gameObject);
+            DestroyAgent();
         }
     }
 
-    private void Mutate()
+    public void Mutate()
     {
-        if (mutateMutations)
-        {
-            mutationAmount += Random.Range(-0.01f, 0.01f);
-            mutationChance += Random.Range(-0.01f, 0.01f);
-        }
-
-        // Limit mutation amount and chance within a reasonable range
-        mutationAmount = Mathf.Clamp(mutationAmount, 0f, 0.1f);
         mutationChance = Mathf.Clamp(mutationChance, 0f, 1f);
 
-        nn.MutateNetwork(mutationChance, mutationAmount);
+        if(mutationChance > 0)
+            nn.MutateNetwork(mutationChance, mutationAmount);
     }
 
     //keep track of checkpoints passed and the total amount of correct checkpoints
